@@ -32,7 +32,7 @@
 [@sfpacman](https://github.com/sfpacman)
 
 ## About The Project
-This repository contains the R code used to generate a gif animation showcased in a fundraising presentation for ovarian cancer research. The purpose of the animation is to captivate audiences with the remarkable capabilities of genomics sequencing technology. The animation is crafted using [gganimate](https://gganimate.com/) and comprises a series of ggplots. The tissue and projections are derived from 10X Visium spatial transcriptome data obtained from an actual endometrium sample, which serves as the basis for the animation
+This repository contains the R code used to generate a gif animation used in a fundraising presentation for ovarian cancer research. The purpose of the animation is to captivate audiences with the remarkable capabilities of genomics sequencing technology. The animation is crafted using [gganimate](https://gganimate.com/) and comprises a series of ggplots. The tissue and projections are derived from 10X Visium spatial transcriptome data obtained from an actual endometrium sample, which serves as the basis for the animation
 
 
 <img src="https://raw.githubusercontent.com/sfpacman/show_off/main/data/animation.gif">
