@@ -35,11 +35,11 @@
 This repository contains the R code used to generate a gif animation showcased in a fundraising presentation for ovarian cancer research. The purpose of the animation is to captivate audiences with the remarkable capabilities of genomics sequencing technology. The animation is crafted using [gganimate](https://gganimate.com/) and comprises a series of ggplots. The tissue and projections are derived from 10X Visium spatial transcriptome data obtained from an actual endometrium sample, which serves as the basis for the animation
 
 
-[<img src="path/to/image.png">](https://link-to-your-URL/)
+<img src="https://raw.githubusercontent.com/sfpacman/show_off/main/data/animation.gif">
 
 <!-- About -->
-## The meaning of the image
-Subsequently, the insights gained from this analysis are visually represented by colored dots on the t-SNE plot. These dots are then remapped to the tissue and the uterus, creating a dynamic and informative representation of the genomic journey.
+## The meaning of the animation
+This animation provides a comprehensive overview of the workflow for 10X Visium. It commences with the extraction of an endometrium sample from the uterus, progresses through RNA sequencing, and incorporates a sequence analysis depicted through the PCA and t-SNE projection animation.Subsequently, the insights gained from this analysis are visually represented by colored dots on the t-SNE plot. These dots are then remapped to the tissue and the uterus, creating a dynamic and informative representation of the genomic journey.
 
 <!-- GETTING STARTED -->
 ## How to run it
