@@ -1,0 +1,200 @@
+---
+title: "DEMO"
+author: "Pak Yu"
+date: "5/4/2022"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+## Loading package
+
+```{r}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(ggplot2)
+library(tweenr)
+library(gganimate)
+library(imager)
+library(viridis)
+library(plotbb)
+library(ggimage)
+library(animation)
+```
+
+## Loading and Converting the Image of Uterus
+
+extract a subset of pixel coordinate of a image of uterus to use
+
+```{r}
+
+file <- 'data/woman-uterus-line-icon-healthy-internal-organ-vector-30922236.jpg'
+im <- load.image(file)
+im <- resize(im,round(width(im)*0.75),round(height(im)/0.8))
+px <- im < .5
+px <- px %>% as.data.frame()
+px <- px*-1 
+px <- px %>% dplyr::select(x,y)
+```
+
+## Loading PC and TSNE Projection Cooridates
+
+```{r}
+PC_projection <- read_csv("data/visium/pca_projection.csv")
+tsne_cluster <- read_csv("data/visium/clusters.csv") %>% mutate(Cluster=Cluster %>% as.factor)
+tsne_projection <- read_csv("data/visium/tsne_projection.csv")
+PC_projection <- PC_projection %>% 
+                 mutate(across(where(is.numeric), ~ifelse(abs(.x) > 200 ,sample(-100:100, 1),.x))) %>% 
+                left_join(tsne_cluster) %>% 
+                left_join(tsne_projection)
+```
+
+## Backfilling Missing Pixel
+
+```{r}
+px_backfill_n <- (dim(PC_projection)-dim(px))[1]
+px_backfill <-px[runif(px_backfill_n, 1,dim(PC_projection)[1]) %>% round,]
+px <- rbind(px,px_backfill)
+```
+
+## Extracting visium Cooridates
+
+```{r}
+tissue_positions_list <- read_csv("data/visium/tissue_positions_list.csv", 
+                                   col_names = c("Barcode","in_tissue","x","y","x_pixel","y_pixel"), 
+                                   col_types = cols(in_tissue = col_logical()))
+
+
+tissue_positions_list <- tissue_positions_list %>% 
+                         dplyr::filter(in_tissue==TRUE) %>% 
+                         dplyr::select(-c("x_pixel","y_pixel","in_tissue"))
+```
+
+## Random Functions Used in Animation
+
+```{r}
+seq_gen <- function(num){ runif(n(),1,4) %>% round %>% factor(.,levels=c(1:4),labels=c("A","C","T","G")) }
+val_gen <- function(num){ runif(n(),1,10) %>% ifelse(. >8, .*10,.)}
+```
+
+## Making Transition Animation
+
+number of frames can be adjusted by `nframs`. The Dimensions of PC are hard-coded for aesthetic purpose
+
+```{r,warning=FALSE}
+start_tween  <- px %>%
+                  dplyr::select(x,y) %>%
+                  keep_state(20) %>%
+                  tween_state(tissue_positions_list %>% select(-Barcode), ease = "cubic-in-out", nframes = 25)%>%
+                  keep_state(10) %>%
+                  group_split(.frame)
+#making random DNA sequencing 
+sequcing_tween <- tissue_positions_list %>% mutate(seq=seq_gen(n())) %>% 
+                  tween_state(tissue_positions_list %>% mutate(seq=seq_gen(n())), ease = "linear", nframes = 5) %>%
+                  tween_state(tissue_positions_list %>% mutate(seq=seq_gen(n())), ease = "linear", nframes = 5) %>%
+                  tween_state(tissue_positions_list %>% mutate(seq=seq_gen(n())), ease = "linear", nframes = 5) %>%
+                  tween_state(tissue_positions_list %>% mutate(seq=seq_gen(n())), ease = "linear", nframes = 5) %>%
+                  tween_state(tissue_positions_list %>% mutate(seq=seq_gen(n())), ease = "linear", nframes = 5) %>%
+                  keep_state(10) %>%
+                  group_split(.frame)
+
+analysis_tween <- tissue_positions_list %>% mutate(val=val_gen(n())) %>%
+                  tween_state(tissue_positions_list %>% mutate(val=val_gen(n())), ease = "linear", nframes = 5) %>%
+                  tween_state(tissue_positions_list %>% mutate(val=val_gen(n())), ease = "linear", nframes = 5) %>%
+                  tween_state(tissue_positions_list %>% mutate(val=val_gen(n())), ease = "linear", nframes = 5) %>%
+                  tween_state(PC_projection %>% dplyr::select(x="PC-1",y="PC-2",Barcode) %>% mutate(val=val_gen(n())),ease = "cubic-in-out", nframes = 20) %>%
+                  tween_state(tissue_positions_list %>% mutate(val=val_gen(n())), ease = "linear", nframes = 5) %>%
+                  tween_state(tissue_positions_list %>% mutate(val=val_gen(n())), ease = "linear", nframes = 5) %>%
+                  tween_state(PC_projection %>% dplyr::select(x="PC-3",y="PC-6",Barcode) %>% mutate(val=val_gen(n())),ease = "cubic-in-out", nframes = 20) %>%
+                  tween_state(tissue_positions_list %>% mutate(val=val_gen(n())), ease = "linear", nframes = 5) %>%
+                  tween_state(tissue_positions_list %>% mutate(val=val_gen(n())), ease = "linear", nframes = 5) %>%
+                  tween_state(PC_projection %>% dplyr::select(x="PC-6",y="PC-2",Barcode) %>% mutate(val=val_gen(n())),ease = "cubic-in-out", nframes = 20) %>%
+                  tween_state(tissue_positions_list %>% mutate(val=val_gen(n())), ease = "linear", nframes = 5) %>%
+                  tween_state(tissue_positions_list %>% mutate(val=val_gen(n())), ease = "linear", nframes = 5) %>%
+                  tween_state(PC_projection %>% dplyr::select(x="PC-9",y="PC-10",Barcode) %>% mutate(val=val_gen(n())),ease = "cubic-in-out", nframes = 20) %>%
+                  tween_state(tissue_positions_list %>% mutate(val=val_gen(n())), ease = "linear", nframes = 5) %>%
+                  tween_state(tissue_positions_list %>% mutate(val=val_gen(n())), ease = "linear", nframes = 5) %>%
+                  tween_state(tissue_positions_list %>% mutate(val=val_gen(n())), ease = "linear", nframes = 5) %>%
+                  tween_state(PC_projection %>% dplyr::select(x="TSNE-1",y="TSNE-2",Barcode) %>% mutate(val=val_gen(n())),ease = "quintic-in-out", nframes = 20) %>%
+                  tween_state(PC_projection %>% dplyr::select(x="TSNE-1",y="TSNE-2",Barcode) %>% mutate(val=val_gen(n())),ease = "sine-in-out", nframes = 20) %>%
+                  tween_state(PC_projection %>% dplyr::select(x="TSNE-1",y="TSNE-2",Barcode) %>% mutate(val=val_gen(n())),ease = "quadratic-in-out", nframes = 20) %>%
+                  keep_state(30) %>%
+                  group_split(.frame)
+
+tissue_positions_list <- tissue_positions_list %>% inner_join(tsne_cluster)
+cluster_tween <- PC_projection %>% dplyr::select(x="TSNE-1",y="TSNE-2",Cluster) %>% mutate(Cluster=as.numeric(Cluster)) %>%
+                                                                        mutate(Cluster=case_when(Cluster %% 3 == 0 ~ 0,
+                                                                                                 Cluster %% 3 == 1 ~ 1,
+                                                                                                 Cluster %% 3 == 2 ~ 2,
+                                                                                                 Cluster %% 3 == 3 ~ 3,
+                                                                                                 ) %>% as.factor)  %>%
+                 keep_state(20) %>% 
+                 tween_state(PC_projection %>% dplyr::select(x="TSNE-1",y="TSNE-2",Cluster) %>% mutate(Cluster=as.numeric(Cluster)) %>%
+                                                                            mutate(Cluster=case_when(Cluster %% 3 == 0 ~ 2,
+                                                                                                     Cluster %% 3 == 1 ~ 3,
+                                                                                                     Cluster %% 3 == 2 ~ 1,
+                                                                                                     Cluster %% 3 == 3 ~ 0,
+                                                                                                     ) %>% as.factor),ease = "cubic-in-out", nframes = 10) %>% 
+                 tween_state( PC_projection  %>% dplyr::select(x="TSNE-1",y="TSNE-2",Cluster), ease = "cubic-in-out", nframes = 30) %>%
+                 keep_state(20) %>%
+                 tween_state(tissue_positions_list %>% dplyr::select(x,y,Cluster),ease = "bounce-in", nframes = 25 ) %>%
+                 keep_state(20) %>%
+                 tween_state( px %>% mutate(Cluster=tissue_positions_list$Cluster) , nframes= 50, ease = "cubic-in-out" ) %>% 
+                 keep_state(50) %>%
+                 group_split(.frame)
+
+```
+
+## Building Blank `ggplot` template
+
+```{r}
+gg_start <- ggplot() +
+        geom_point(
+        aes(x = x, y = y),
+         show.legend = F) + theme_void() +labs(x="",y="")
+
+gg_seq <- ggplot() +
+          geom_text(
+            aes(x=x,y=y,color=seq,label=seq)
+          ) + theme_void() + guides(color="none") +  scale_color_viridis(discrete=TRUE, option="plasma") 
+ #+scale_color_manual(values=c("Blue", "Green", "Yellow", "Red"))
+
+gg_analysis <- ggplot() + geom_point(
+        aes(x = x, y = y, color=val,size=val) , show.legend = F) + theme_void() +labs(x="",y="")  + scale_color_viridis(option="plasma")
+
+gg_cluster <- ggplot() +
+        geom_point(
+        aes(x = x, y = y, color=Cluster, shape=Cluster, fill=Cluster), size=4 , show.legend = F) + theme_void() +labs(x="",y="")  +  scale_color_viridis(discrete=TRUE) + 
+       scale_shape_manual(values=runif(8,14,25)%>% round) +scale_fill_viridis(discrete=TRUE)
+```
+
+## Gif Generation
+
+```{r,message=FALSE}
+proj_dir <- getwd()
+file.path(proj_dir,"data") %>% setwd()
+oopt <- ani.options(interval = 1 / 20)
+saveGIF({
+for (d in start_tween) {
+  p <- gg_start %+% d
+  plot(p)
+}
+for( d in sequcing_tween ) {
+    p <- gg_seq %+% d
+    plot(p)
+}
+   for(d in analysis_tween){
+     p <- gg_analysis %+% d
+     plot(p)
+   }
+
+   for(d in cluster_tween){
+     p <- gg_cluster %+% d
+     plot(p)
+   }
+    }
+    ,
+    movie.name = "animation.gif",
+    ani.width = 360, ani.height = 360)
+setwd(proj_dir)
+```
