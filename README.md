@@ -43,4 +43,4 @@ This animation represents a high-level overview of the workflow for 10X Visium. 
 
 <!-- GETTING STARTED -->
 ## How to run it
-If you wish to reproduce this gif, you can [use ```renv.lock```file ](https://rstudio.github.io/renv/articles/renv.html#collaboration) to install the required R packages.
+If you wish to make a simiar gif, you can [use ```renv.lock```file ](https://rstudio.github.io/renv/articles/renv.html#collaboration) to install the required R packages and the code is located at `notebook/demo_visium.Rmd`.
