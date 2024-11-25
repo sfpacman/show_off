@@ -156,16 +156,22 @@ gg_start <- ggplot() +
 gg_seq <- ggplot() +
           geom_text(
             aes(x=x,y=y,color=seq,label=seq)
-          ) + theme_void() + guides(color="none") +  scale_color_viridis(discrete=TRUE, option="plasma") 
+          ) + 
+         theme_void() + 
+         guides(color="none") +  
+         scale_color_viridis(discrete=TRUE, option="plasma") 
  #+scale_color_manual(values=c("Blue", "Green", "Yellow", "Red"))
 
-gg_analysis <- ggplot() + geom_point(
-        aes(x = x, y = y, color=val,size=val) , show.legend = F) + theme_void() +labs(x="",y="")  + scale_color_viridis(option="plasma")
+gg_analysis <- ggplot() + 
+            geom_point( aes(x = x, y = y, color=val,size=val) , show.legend = F) + 
+            theme_void() +labs(x="",y="")  + 
+            scale_color_viridis(option="plasma")
 
 gg_cluster <- ggplot() +
-        geom_point(
-        aes(x = x, y = y, color=Cluster, shape=Cluster, fill=Cluster), size=4 , show.legend = F) + theme_void() +labs(x="",y="")  +  scale_color_viridis(discrete=TRUE) + 
-       scale_shape_manual(values=runif(8,14,25)%>% round) +scale_fill_viridis(discrete=TRUE)
+        geom_point(  aes(x = x, y = y, color=Cluster, shape=Cluster, fill=Cluster), size=4 , show.legend = F) + 
+        theme_void() +labs(x="",y="")  +  scale_color_viridis(discrete=TRUE) + 
+        scale_shape_manual(values=runif(8,14,25)%>% round) +
+        scale_fill_viridis(discrete=TRUE)
 ```
 
 ## Gif Generation
